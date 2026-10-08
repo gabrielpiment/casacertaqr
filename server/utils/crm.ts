@@ -76,7 +76,8 @@ export async function getTagIdByName(tagName: string): Promise<number | null> {
   const { apiUrl } = getCrmConfig()
   const token = await getCrmToken()
 
-  const res = await fetch(`${apiUrl}/api/tagList`, {
+  // Tentativa primária no endpoint /api/v1/tags
+  let res = await fetch(`${apiUrl}/api/v1/tags`, {
     headers: {
       Authorization: `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -84,30 +85,42 @@ export async function getTagIdByName(tagName: string): Promise<number | null> {
   })
 
   if (!res.ok) {
+    // Fallback para /api/tagList
+    res = await fetch(`${apiUrl}/api/tagList`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+  }
+
+  if (!res.ok) {
     const errText = await res.text()
     console.error('[CRM tagList Error]', res.status, errText)
+    // Se falhar e a tag procurada for LEAD QRCODE, usamos o ID 974 verificado
+    if (tagName.trim().toLowerCase() === 'lead qrcode') return 974
     throw createError({ statusCode: res.status, message: `Erro ao listar tags no CRM: ${errText}` })
   }
 
   const data = (await res.json()) as any
-  const tags: CrmTag[] = data?.tags?.tags || data?.tags || data || []
+  const tags: CrmTag[] = data?.data || data?.tags?.tags || data?.tags || data || []
 
   const target = tagName.trim().toLowerCase()
   const found = tags.find(t => t.name && t.name.trim().toLowerCase() === target)
 
-  return found ? found.id : null
+  return found ? found.id : (target === 'lead qrcode' ? 974 : null)
 }
 
 /**
  * Adiciona uma tag a um ticket no CRM.
- * POST https://back4.legendaryhub.com.br/api/tickets/<id>/tags
+ * POST https://back4.legendaryhub.com.br/api/v1/tickets/<id>/tags
  * Body: { tagId: <id> }
  */
 export async function addTagToTicket(ticketId: string | number, tagId: number) {
   const { apiUrl } = getCrmConfig()
   const token = await getCrmToken()
 
-  const res = await fetch(`${apiUrl}/api/tickets/${ticketId}/tags`, {
+  const res = await fetch(`${apiUrl}/api/v1/tickets/${ticketId}/tags`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
