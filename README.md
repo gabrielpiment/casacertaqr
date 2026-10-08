@@ -29,6 +29,23 @@ npm run dev            # http://localhost:3000  (senha padrão: admin)
 | `NUXT_PUBLIC_SITE_URL` | Domínio fixo usado dentro do QR (ex: `https://qr.casacerta.com.br`). **Defina em produção** e nunca troque depois. |
 | `SUPABASE_URL` | URL do projeto Supabase |
 | `SUPABASE_KEY` | Chave pública `anon` do Supabase |
+| `CRM_API_URL` | URL da API do CRM (padrão: `https://back4.legendaryhub.com.br`) |
+| `CRM_CLIENT_ID` | Client ID gerado no CRM |
+| `CRM_CLIENT_SECRET` | Client Secret gerado no CRM |
+
+## Integração com CRM (Legendary Hub)
+
+Sempre que um lead chama no WhatsApp através do QR Code, o CRM adiciona automaticamente a etiqueta **LEAD QRCODE** no ticket.
+
+1. **Configurar Webhook no CRM**:
+   - No painel do Legendary Hub (Configurações > Webhook), adicione a URL:
+     `https://seu-dominio/api/webhook/crm`
+   - Evento: Criação de novo ticket / mensagem recebida.
+2. **Como o sistema processa**:
+   - O endpoint `POST /api/webhook/crm` recebe o evento.
+   - Autentica via OAuth2 com `CRM_CLIENT_ID` e `CRM_CLIENT_SECRET`.
+   - Localiza a tag chamada `LEAD QRCODE` em `GET /api/tagList`.
+   - Adiciona a tag ao ticket via `POST /api/tickets/<id>/tags`.
 
 ## Banco de Dados (Supabase)
 

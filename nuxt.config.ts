@@ -15,6 +15,9 @@ export default defineNuxtConfig({
     adminPassword: process.env.NUXT_ADMIN_PASSWORD || 'admin',
     supabaseUrl: process.env.SUPABASE_URL || 'https://pxdsrlrxfsomfztrfucz.supabase.co',
     supabaseKey: process.env.SUPABASE_KEY || '',
+    crmApiUrl: process.env.CRM_API_URL || 'https://back4.legendaryhub.com.br',
+    crmClientId: process.env.CRM_CLIENT_ID || '',
+    crmClientSecret: process.env.CRM_CLIENT_SECRET || '',
     public: {
       // Domínio usado dentro do QR Code (NUXT_PUBLIC_SITE_URL). Vazio = domínio atual.
       siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
